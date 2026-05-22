@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Data / models
+*.pdf
+*.bin
+*.safetensors
+*.gguf
+
+# Benchmark outputs
+benchmark_results/
+
+# Triton / CUDA caches
+.triton/
+*.ptx
+*.cubin
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

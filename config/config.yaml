@@ -1,0 +1,50 @@
+retrieval:
+  default_top_k: 5
+  min_top_k: 2
+  max_top_k: 20
+  default_chunk_size: 512
+  min_chunk_size: 128
+  max_chunk_size: 2048
+  chunk_overlap: 50
+  rerank_threshold: 0.3
+  similarity_threshold: 0.4
+
+adaptive:
+  entropy_low: 0.3          # confident query → fewer chunks
+  entropy_high: 0.7         # uncertain query → more chunks
+  complexity_threshold: 0.6
+  max_hops: 3
+  confidence_cutoff: 0.75
+  latency_budget_ms: 2000
+
+caching:
+  enable_prefix_cache: true
+  cache_ttl_seconds: 3600
+  max_cache_entries: 1000
+  sglang_port: 30000
+
+embedding:
+  model: "BAAI/bge-large-en-v1.5"
+  batch_size: 32
+  device: "cuda"             # or "cpu"
+  normalize: true
+
+llm:
+  model: "meta-llama/Meta-Llama-3-8B-Instruct"
+  temperature: 0.1
+  max_tokens: 1024
+  use_sglang: true
+
+evaluation:
+  datasets:
+    - "hotpot_qa"
+    - "nq_open"
+  metrics:
+    - "recall_at_k"
+    - "mrr"
+    - "ndcg"
+    - "faithfulness"
+    - "answer_relevancy"
+    - "context_precision"
+  k_values: [1, 3, 5, 10]
+  num_benchmark_queries: 500

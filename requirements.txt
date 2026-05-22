@@ -1,0 +1,30 @@
+torch>=2.1.0
+sentence-transformers>=2.7.0
+numpy>=1.26.0
+
+# triton>=2.3.0  — Linux/WSL2 only; on Windows install triton-windows or skip (PyTorch fallback is automatic)
+
+faiss-cpu>=1.8.0
+
+openai>=1.30.0          # SGLang client (OpenAI-compatible API)
+python-dotenv>=1.0.0
+
+# SGLang (install separately on the GPU machine)
+# pip install sglang[all]
+
+# Real RAGAS evaluation
+ragas>=0.1.21
+langchain-openai>=0.1.0
+langchain-huggingface>=0.0.3
+datasets>=2.19.0
+
+# Document loading
+pymupdf>=1.24.0
+
+# Benchmarking / utils
+pyyaml>=6.0.1
+pandas>=2.2.0
+matplotlib>=3.8.0
+seaborn>=0.13.0
+tqdm>=4.66.0
+pytest>=8.0.0
