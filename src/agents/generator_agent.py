@@ -62,7 +62,7 @@ def generate(query, chunks):
     try:
         stream = client.chat.completions.create(
             model=model, messages=_messages(query, chunks),
-            temperature=0.1, max_tokens=512, stream=True,
+            temperature=0.1, max_tokens=200, stream=True,
         )
         for chunk in stream:
             delta = chunk.choices[0].delta.content
