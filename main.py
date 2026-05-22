@@ -1,30 +1,9 @@
 """
-Adaptive RAG — Interactive Terminal + Benchmark
+Pro-RAG — Adaptive Multi-Hop RAG with Triton + SGLang Prefix Caching
 
-Same LLM (SGLang / Qwen2.5-1.5B) across all 5 systems → fair comparison.
-Only retrieval differs between systems.
-
-5 Systems:
-  S1  Plain RAG          fixed k=5,  PyTorch sim,  SGLang
-  S2  RAG + Adaptive     adaptive k, PyTorch sim,  SGLang
-  S3  RAG + Triton       fixed k=5,  Triton sim,   SGLang
-  S4  RAG + Triton + Adaptive        Triton sim,   SGLang
-  S5  RAG + Triton + Adaptive + Prefix Cache        ← chat uses this
-
-Chat runs S5. On quit, S1-S4 run fresh on your questions. S5 = chat history.
-
-Start SGLang (S5 — radix cache on by default):
-    sglang serve \
+Start SGLang:
+    python -m sglang.launch_server \
         --model-path Qwen/Qwen2.5-1.5B-Instruct-AWQ \
-        --quantization awq \
-        --mem-fraction-static 0.8 --port 30000
-
-Start SGLang (S6 — radix cache + speculative decoding with 0.5B draft):
-    sglang serve \
-        --model-path Qwen/Qwen2.5-1.5B-Instruct-AWQ \
-        --quantization awq \
-        --speculative-draft-model-path Qwen/Qwen2.5-0.5B-Instruct \
-        --speculative-num-steps 5 \
         --mem-fraction-static 0.8 --port 30000
 
 Run:
@@ -236,7 +215,7 @@ def run_benchmark(index, chat_history):
     questions = [r["question"] for r in chat_history]
 
     sep("═")
-    print(f"5-SYSTEM BENCHMARK  —  {len(questions)} questions  —  Qwen2.5-1.5B (all systems)")
+    print(f"PRO-RAG BENCHMARK  —  {len(questions)} questions  —  Qwen2.5-1.5B")
     sep("═")
 
     reports = []
@@ -254,10 +233,9 @@ def run_benchmark(index, chat_history):
         if results:
             reports.append(aggregate(results, name))
 
-    # S5 = chat history (prefix cache, no spec decoding) — no re-run needed, already collected
-    print(f"\n  S5: RAG + Triton + Adaptive + Prefix Cache  (from chat — no re-run)")
+    print(f"\n  Pro-RAG  (from chat session — no re-run needed)")
     s5 = [dict(r) for r in chat_history]
-    reports.append(aggregate(s5, "S5: RAG + Triton + Adaptive + Prefix Cache"))
+    reports.append(aggregate(s5, "Pro-RAG"))
 
     df = pd.DataFrame(reports).set_index("system")
     sep("═")
@@ -272,7 +250,7 @@ def run_benchmark(index, chat_history):
     # Save questions so run_s6.py can replay the same ones
     with open("benchmark_results/session_questions.json", "w") as f:
         json.dump(questions, f, indent=2)
-    print("Saved → benchmark_results/session_questions.json  (for run_s6.py)")
+    print("Saved → benchmark_results/session_questions.json")
 
     _plot(df)
 
@@ -314,7 +292,7 @@ def _plot(df):
 
         labels = [f"{lbl}: {n}" for lbl, n in zip(sys_labels, df.index)]
         fig.legend(labels, loc="lower center", ncol=2, fontsize=8, bbox_to_anchor=(0.5, 0.0))
-        plt.suptitle("RAG Benchmark — HP Saga | S1-S5: SGLang  |  S5 adds Prefix Cache tracking", fontsize=10, fontweight="bold")
+        plt.suptitle("Pro-RAG Benchmark — Adaptive Retrieval + Triton + SGLang Prefix Cache", fontsize=10, fontweight="bold")
         plt.tight_layout(rect=[0, 0.12, 1, 1])
         plt.savefig("benchmark_results/comparison.png", dpi=150, bbox_inches="tight")
         print("Plot  → benchmark_results/comparison.png")
@@ -326,7 +304,7 @@ def _plot(df):
 
 def show_session_summary(history):
     sep()
-    print("CHAT SESSION  (S5: Triton + Adaptive + Prefix Cache | SGLang)")
+    print("CHAT SESSION  (Pro-RAG: Triton + Adaptive + Prefix Cache | SGLang)")
     sep()
     W = 38
     print(f"{'#':<3}  {'Question':<{W}}  {'TTFT':>7}  {'Total':>7}  {'Hops':>5}  {'Cache':>6}")
@@ -368,7 +346,7 @@ def main():
     model = os.getenv("SGLANG_MODEL", "Qwen/Qwen2.5-1.5B-Instruct")
     port  = os.getenv("SGLANG_PORT",  "30000")
     print(f"\nBackend: SGLang → {model} (port {port})")
-    print("All 5 systems use the same model — only retrieval differs.\n")
+    print(f"Backend: SGLang with radix attention prefix caching.\n")
 
     sep()
     print("PRESET QUESTIONS:")
@@ -417,7 +395,7 @@ def main():
     show_session_summary(history)
 
     sep("═")
-    go = input("\nRun 5-system benchmark? (S1-S4 fresh, S5 = your chat): ").strip().lower()
+    go = input("\nRun full benchmark? [y/n]: ").strip().lower()
     if go == "y":
         run_benchmark(index, history)
 
