@@ -4,6 +4,12 @@ Production-grade Retrieval-Augmented Generation combining adaptive multi-hop ret
 
 ---
 
+## Architecture
+
+![Pro-RAG Architecture](diagram.png)
+
+---
+
 ## Results
 
 | Metric | Value |
