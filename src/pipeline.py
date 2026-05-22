@@ -38,20 +38,21 @@ def query(index, question, latency_budget=2000):
         retrieval["chunks"].extend(extra["chunks"])
         retrieval["hops"] += extra["hops"]
 
-    gen = _generate(question, retrieval["chunks"])
+    top_chunks = retrieval["chunks"][:8]
+    gen = _generate(question, top_chunks)
 
     # record real TTFT so prefix cache tracker can compute speedup
     cache_hit = False
-    if retrieval["chunks"]:
-        doc_texts = [c["chunk"]["text"] for c in retrieval["chunks"]]
+    if top_chunks:
+        doc_texts = [c["chunk"]["text"] for c in top_chunks]
         cache_hit = record_ttft(doc_texts, gen["ttft_ms"])
 
     return {
         "question":       question,
         "answer":         gen["answer"],
-        "contexts":       [c["chunk"]["text"] for c in retrieval["chunks"]],
-        "retrieved_ids":  [f"{c['chunk']['doc_id']}_{c['chunk']['chunk_id']}" for c in retrieval["chunks"]],
-        "num_chunks":     len(retrieval["chunks"]),
+        "contexts":       [c["chunk"]["text"] for c in top_chunks],
+        "retrieved_ids":  [f"{c['chunk']['doc_id']}_{c['chunk']['chunk_id']}" for c in top_chunks],
+        "num_chunks":     len(top_chunks),
         "hops":           retrieval["hops"],
         "k_values":       retrieval["k_values"],
         "complexity":     analysis["complexity"],
